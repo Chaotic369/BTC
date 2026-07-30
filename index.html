@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC/USDT Live Binary Simulation Platform</title>
+    <!-- Lightweight Charts CDN -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0b0e14;
+            color: #d1d4dc;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        header {
+            height: 55px;
+            background-color: #131722;
+            border-bottom: 1px solid #2a2e39;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #f0b90b;
+        }
+
+        .live-price-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .symbol-title {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .price-display {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: monospace;
+        }
+
+        .price-up { color: #089981; }
+        .price-down { color: #f23645; }
+
+        .account-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #1e222d;
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid #2a2e39;
+        }
+
+        .balance-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .balance-label {
+            font-size: 0.7rem;
+            color: #787b86;
+            text-transform: uppercase;
+        }
+
+        .balance-amount {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #22ab94;
+        }
+
+        .btn-refill {
+            background: #2962ff;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .btn-refill:hover {
+            background: #1e51d8;
+        }
+
+        /* Main Workspace */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 55px);
+        }
+
+        /* Chart Area */
+        .chart-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chart-controls {
+            height: 42px;
+            background-color: #131722;
+            border-bottom: 1px solid #2a2e39;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+
+        .tf-btn {
+            background: transparent;
+            border: 1px solid #2a2e39;
+            color: #787b86;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tf-btn.active, .tf-btn:hover {
+            color: #2962ff;
+            border-color: #2962ff;
+            background: rgba(41, 98, 255, 0.1);
+        }
+
+        #chart-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Right Trading Sidebar */
+        .trading-panel {
+            width: 320px;
+            background-color: #131722;
+            border-left: 1px solid #2a2e39;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .panel-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .panel-label {
+            font-size: 0.8rem;
+            color: #787b86;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .input-box {
+            background: #1e222d;
+            border: 1px solid #2a2e39;
+            border-radius: 6px;
+            color: #fff;
+            padding: 10px;
+            font-size: 1rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .input-box:focus {
+            border-color: #2962ff;
+        }
+
+        .payout-badge {
+            background: rgba(8, 153, 129, 0.15);
+            color: #089981;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 1px solid rgba(8, 153, 129, 0.3);
+        }
+
+        /* Trade Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-trade {
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-trade:active {
+            transform: scale(0.98);
+        }
+
+        .btn-call {
+            background: linear-gradient(135deg, #089981 0%, #056656 100%);
+            box-shadow: 0 4px 15px rgba(8, 153, 129, 0.3);
+        }
+
+        .btn-put {
+            background: linear-gradient(135deg, #f23645 0%, #b22532 100%);
+            box-shadow: 0 4px 15px rgba(242, 54, 69, 0.3);
+        }
+
+        .btn-call:hover { opacity: 0.9; }
+        .btn-put:hover { opacity: 0.9; }
+
+        /* Trade Lists */
+        .trades-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e222d;
+            border-radius: 6px;
+            border: 1px solid #2a2e39;
+            overflow: hidden;
+        }
+
+        .trades-header {
+            padding: 10px;
+            background: #171b26;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-bottom: 1px solid #2a2e39;
+            color: #787b86;
+        }
+
+        .trades-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .trade-card {
+            background: #131722;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 0.78rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #787b86;
+        }
+
+        .trade-card.CALL { border-left-color: #089981; }
+        .trade-card.PUT { border-left-color: #f23645; }
+
+        .trade-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .trade-status {
+            font-weight: 700;
+        }
+
+        .win-text { color: #089981; }
+        .loss-text { color: #f23645; }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #1e222d;
+            border-left: 4px solid #2962ff;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            font-size: 0.85rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-chart-line"></i> BTC BINARY LIVE
+        </div>
+
+        <div class="live-price-container">
+            <span class="symbol-title">BTC / USDT</span>
+            <span id="live-price" class="price-display">00,000.00</span>
+        </div>
+
+        <div class="account-bar">
+            <div class="balance-info">
+                <span class="balance-label">Demo Balance</span>
+                <span id="demo-balance" class="balance-amount">$10,000.00</span>
+            </div>
+            <button class="btn-refill" onclick="refillBalance()"><i class="fa-solid fa-rotate-right"></i> Refill</button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <div class="workspace">
+        <!-- Chart Section -->
+        <div class="chart-section">
+            <div id="toast-container"></div>
+            
+            <div class="chart-controls">
+                <span style="font-size:0.8rem; color:#787b86; font-weight:600;">Timeframe:</span>
+                <button class="tf-btn active" onclick="changeTimeframe('1m', this)">1m</button>
+                <button class="tf-btn" onclick="changeTimeframe('5m', this)">5m</button>
+                <button class="tf-btn" onclick="changeTimeframe('15m', this)">15m</button>
+                <button class="tf-btn" onclick="changeTimeframe('1h', this)">1h</button>
+                <span style="margin-left: auto; font-size:0.75rem; color:#787b86;">
+                    <i class="fa-solid fa-mouse"></i> Scroll/Drag to Zoom & Pan
+                </span>
+            </div>
+
+            <div id="chart-container"></div>
+        </div>
+
+        <!-- Binary Trading Panel -->
+        <div class="trading-panel">
+            <div class="panel-group">
+                <div class="panel-label">
+                    <span>INVESTMENT AMOUNT ($)</span>
+                </div>
+                <input type="number" id="trade-amount" class="input-box" value="100" min="1" step="10">
+            </div>
+
+            <div class="panel-group">
+                <div class="panel-label">
+                    <span>TRADE DURATION</span>
+                </div>
+                <select id="trade-duration" class="input-box">
+                    <option value="5">5 Seconds</option>
+                    <option value="10">10 Seconds</option>
+                    <option value="30" selected>30 Seconds</option>
+                    <option value="60">1 Minute</option>
+                    <option value="300">5 Minutes</option>
+                </select>
+            </div>
+
+            <div class="payout-badge">
+                <i class="fa-solid fa-bolt"></i> Payout: +85%
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-trade btn-call" onclick="executeTrade('CALL')">
+                    <span><i class="fa-solid fa-arrow-trend-up"></i> HIGHER</span>
+                    <span style="font-size:0.8rem;">CALL</span>
+                </button>
+                <button class="btn-trade btn-put" onclick="executeTrade('PUT')">
+                    <span><i class="fa-solid fa-arrow-trend-down"></i> LOWER</span>
+                    <span style="font-size:0.8rem;">PUT</span>
+                </button>
+            </div>
+
+            <div class="trades-container">
+                <div class="trades-header">
+                    ACTIVE / RECENT TRADES
+                </div>
+                <div id="trades-list" class="trades-list">
+                    <!-- Dynamic Trades Go Here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State ---
+        let balance = parseFloat(localStorage.getItem('demo_balance')) || 10000.00;
+        let currentPrice = 0.00;
+        let lastPrice = 0.00;
+        let currentInterval = '1m';
+        let ws = null;
+        let activeTrades = [];
+        let tradeHistory = [];
+
+        // --- UI Elements ---
+        const balanceEl = document.getElementById('demo-balance');
+        const priceEl = document.getElementById('live-price');
+        const tradesListEl = document.getElementById('trades-list');
+
+        function updateBalanceDisplay() {
+            balanceEl.innerText = `$${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            localStorage.setItem('demo_balance', balance);
+        }
+
+        function refillBalance() {
+            balance = 10000.00;
+            updateBalanceDisplay();
+            showToast("Account balance refilled to $10,000.00");
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        updateBalanceDisplay();
+
+        // --- Chart Initialization ---
+        const chartContainer = document.getElementById('chart-container');
+        const chart = LightweightCharts.createChart(chartContainer, {
+            layout: {
+                background: { color: '#0b0e14' },
+                textColor: '#d1d4dc',
+            },
+            grid: {
+                vertLines: { color: '#1e222d' },
+                horzLines: { color: '#1e222d' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            rightPriceScale: {
+                borderColor: '#2a2e39',
+            },
+            timeScale: {
+                borderColor: '#2a2e39',
+                timeVisible: true,
+                secondsVisible: true,
+            },
+        });
+
+        const candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#089981',
+            downColor: '#f23645',
+            borderVisible: false,
+            wickUpColor: '#089981',
+            wickDownColor: '#f23645',
+        });
+
+        // Resize Chart Observer
+        new ResizeObserver(entries => {
+            if (entries.length === 0 || !entries[0].contentRect) return;
+            const newRect = entries[0].contentRect;
+            chart.applyOptions({ width: newRect.width, height: newRect.height });
+        }).observe(chartContainer);
+
+        // --- Fetch Historical Data & Load Websocket ---
+        async function initChartData(interval) {
+            try {
+                const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=200`);
+                const data = await response.json();
+                
+                const cdata = data.map(d => ({
+                    time: d[0] / 1000,
+                    open: parseFloat(d[1]),
+                    high: parseFloat(d[2]),
+                    low: parseFloat(d[3]),
+                    close: parseFloat(d[4])
+                }));
+
+                candlestickSeries.setData(cdata);
+
+                if(cdata.length > 0) {
+                    currentPrice = cdata[cdata.length - 1].close;
+                    updatePriceDisplay(currentPrice);
+                }
+
+                connectWebSocket(interval);
+            } catch (err) {
+                console.error("Error loading Binance historical data:", err);
+            }
+        }
+
+        function connectWebSocket(interval) {
+            if (ws) {
+                ws.close();
+            }
+
+            ws = new WebSocket(`wss://stream.binance.com:9443/ws/btcusdt@kline_${interval}`);
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                const kline = message.k;
+
+                const candle = {
+                    time: kline.t / 1000,
+                    open: parseFloat(kline.o),
+                    high: parseFloat(kline.h),
+                    low: parseFloat(kline.l),
+                    close: parseFloat(kline.c)
+                };
+
+                candlestickSeries.update(candle);
+                
+                lastPrice = currentPrice;
+                currentPrice = candle.close;
+                updatePriceDisplay(currentPrice);
+            };
+        }
+
+        function updatePriceDisplay(price) {
+            priceEl.innerText = price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (price >= lastPrice) {
+                priceEl.className = 'price-display price-up';
+            } else {
+                priceEl.className = 'price-display price-down';
+            }
+        }
+
+        function changeTimeframe(tf, btn) {
+            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentInterval = tf;
+            initChartData(tf);
+        }
+
+        // --- Binary Trade Engine ---
+        function executeTrade(type) {
+            const amountInput = document.getElementById('trade-amount');
+            const durationInput = document.getElementById('trade-duration');
+
+            const amount = parseFloat(amountInput.value);
+            const duration = parseInt(durationInput.value);
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast("Please enter a valid investment amount.");
+                return;
+            }
+
+            if (amount > balance) {
+                showToast("Insufficient demo balance!");
+                return;
+            }
+
+            // Deduct balance
+            balance -= amount;
+            updateBalanceDisplay();
+
+            const trade = {
+                id: Date.now(),
+                type: type, // 'CALL' or 'PUT'
+                amount: amount,
+                entryPrice: currentPrice,
+                duration: duration,
+                remaining: duration,
+                line: null,
+                status: 'ACTIVE'
+            };
+
+            // Draw Price Line on Chart
+            const line = candlestickSeries.createPriceLine({
+                price: currentPrice,
+                color: type === 'CALL' ? '#089981' : '#f23645',
+                lineWidth: 2,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                axisLabelVisible: true,
+                title: `${type} $${amount}`,
+            });
+
+            trade.line = line;
+            activeTrades.push(trade);
+            renderTradesUI();
+            showToast(`Placed ${type} trade of $${amount} at $${currentPrice.toFixed(2)}`);
+        }
+
+        // Timer Engine to handle active binary options
+        setInterval(() => {
+            if (activeTrades.length === 0) return;
+
+            const now = Date.now();
+            for (let i = activeTrades.length - 1; i >= 0; i--) {
+                const trade = activeTrades[i];
+                trade.remaining -= 1;
+
+                if (trade.remaining <= 0) {
+                    // Settle Trade
+                    settleTrade(trade, i);
+                }
+            }
+            renderTradesUI();
+        }, 1000);
+
+        function settleTrade(trade, index) {
+            candlestickSeries.removePriceLine(trade.line);
+
+            let isWin = false;
+            if (trade.type === 'CALL' && currentPrice > trade.entryPrice) {
+                isWin = true;
+            } else if (trade.type === 'PUT' && currentPrice < trade.entryPrice) {
+                isWin = true;
+            }
+
+            if (isWin) {
+                const payout = trade.amount + (trade.amount * 0.85); // 85% payout
+                balance += payout;
+                updateBalanceDisplay();
+                trade.status = 'WIN';
+                trade.payout = payout;
+                showToast(`WIN! +$${(trade.amount * 0.85).toFixed(2)} on BTC`);
+            } else {
+                trade.status = 'LOSS';
+                trade.payout = 0;
+                showToast(`LOSS! -$${trade.amount.toFixed(2)} on BTC`);
+            }
+
+            activeTrades.splice(index, 1);
+            tradeHistory.unshift(trade);
+            renderTradesUI();
+        }
+
+        function renderTradesUI() {
+            tradesListEl.innerHTML = '';
+
+            // Active Trades First
+            activeTrades.forEach(trade => {
+                const card = document.createElement('div');
+                card.className = `trade-card ${trade.type}`;
+                card.innerHTML = `
+                    <div class="trade-details">
+                        <span><b>${trade.type}</b> @ $${trade.entryPrice.toFixed(2)}</span>
+                        <span style="color:#787b86;">Amount: $${trade.amount}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="trade-status" style="color:#f0b90b;">${trade.remaining}s</span>
+                    </div>
+                `;
+                tradesListEl.appendChild(card);
+            });
+
+            // Settled Trades
+            tradeHistory.slice(0, 10).forEach(trade => {
+                const card = document.createElement('div');
+                card.className = `trade-card ${trade.type}`;
+                const isWin = trade.status === 'WIN';
+                card.innerHTML = `
+                    <div class="trade-details">
+                        <span><b>${trade.type}</b> @ $${trade.entryPrice.toFixed(2)}</span>
+                        <span style="color:#787b86;">$${trade.amount}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="trade-status ${isWin ? 'win-text' : 'loss-text'}">
+                            ${isWin ? '+$' + (trade.amount * 0.85).toFixed(2) : '-$' + trade.amount.toFixed(2)}
+                        </span>
+                    </div>
+                `;
+                tradesListEl.appendChild(card);
+            });
+        }
+
+        // Initialize on page load
+        initChartData('1m');
+    </script>
+</body>
+</html>
