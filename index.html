@@ -27,130 +27,120 @@
             position: relative;
         }
 
-        /* Top Header - Compact */
-        header {
-            height: 50px;
-            background-color: #131722;
-            border-bottom: 1px solid #2a2e39;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            z-index: 10;
-        }
+        .status-pill {
+                    pointer-events: auto;
+                    background: rgba(30, 34, 45, 0.7);
+                    backdrop-filter: blur(15px);
+                    -webkit-backdrop-filter: blur(15px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 20px;
+                    padding: 8px 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    margin-bottom: 12px;
+                }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 1rem;
-            color: #f0b90b;
-        }
+                .live-price-container, .account-bar {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
 
-        .live-price-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-        }
+                .price-display {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    font-family: monospace;
+                }
 
-        .price-display {
-            font-size: 1.1rem;
-            font-weight: 700;
-            font-family: monospace;
-        }
+                .price-up { color: #089981; }
+                .price-down { color: #f23645; }
 
-        .price-up { color: #089981; }
-        .price-down { color: #f23645; }
+                .balance-amount {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #22ab94;
+                    font-family: monospace;
+                }
 
-        .account-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+                /* Chart Area - Half Screen (Height) */
+                #chart-container {
+                    width: 100%;
+                    height: 50vh; /* Exactly half screen height */
+                    position: relative;
+                    border-bottom: 1px solid #2a2e39;
+                }
 
-        .balance-amount {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #22ab94;
-        }
+                /* Mac-Style Bottom Dock Container */
+                .dock-container {
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 100;
+                    pointer-events: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
 
-        /* Chart Area - Half Screen (Height) */
-        #chart-container {
-            width: 100%;
-            height: 50vh; /* Exactly half screen height */
-            position: relative;
-            border-bottom: 1px solid #2a2e39;
-        }
+                .mac-dock {
+                    pointer-events: auto;
+                    background: rgba(30, 34, 45, 0.7);
+                    backdrop-filter: blur(15px);
+                    -webkit-backdrop-filter: blur(15px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                }
 
-        /* Mac-Style Bottom Dock Container */
-        .dock-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            pointer-events: none; /* Let clicks pass through empty space */
-        }
+                /* Individual "App Icon" Style Controls */
+                .dock-item {
+                    position: relative;
+                    width: 45px;
+                    height: 45px;
+                    background-color: #1e222d;
+                    border-radius: 10px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    border: 1px solid transparent;
+                    color: #787b86;
+                }
 
-        .mac-dock {
-            pointer-events: auto; /* Re-enable clicks for the dock itself */
-            background: rgba(30, 34, 45, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+                .dock-item:hover {
+                    transform: translateY(-3px);
+                    background-color: #2a2e39;
+                }
 
-        /* Individual "App Icon" Style Controls */
-        .dock-item {
-            position: relative;
-            width: 60px; /* Normal App Icon Size */
-            height: 60px;
-            background-color: #1e222d;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            color: #787b86;
-        }
-
-        .dock-item:hover {
-            transform: translateY(-5px);
-            background-color: #2a2e39;
-        }
-
-        .dock-item i {
-                    font-size: 1.5rem;
+                .dock-item i {
+                    font-size: 1.1rem;
                 }
 
                 /* Specific styles for Input/Select "Icons" */
-        .dock-item input, .dock-item select {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0; /* Hide default styling, keep functionality */
-            cursor: pointer;
-            z-index: 2;
-        }
+                .dock-item input, .dock-item select {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                    z-index: 2;
+                }
 
-        /* Value display overlay for inputs */
-        .dock-item .value-overlay {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #fff;
-            margin-top: 2px;
-        }
+                /* Value display overlay for inputs */
+                .dock-item .value-overlay {
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    color: #fff;
+                }
 
         /* Specializing Buy/Sell Buttons */
         .dock-item.btn-call {
@@ -163,20 +153,20 @@
         }
 
         /* History Panel - Overlay style */
-        .history-panel {
-            position: absolute;
-            top: 50px; /* Below header */
-            right: -320px; /* Hidden by default */
-            width: 300px;
-            height: calc(100vh - 50px);
-            background-color: #131722;
-            border-left: 1px solid #2a2e39;
-            transition: right 0.3s ease;
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-        }
+                .history-panel {
+                    position: absolute;
+                    top: 0;
+                    right: -320px; /* Hidden by default */
+                    width: 300px;
+                    height: 100vh;
+                    background-color: #131722;
+                    border-left: 1px solid #2a2e39;
+                    transition: right 0.3s ease;
+                    z-index: 50;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 15px;
+                }
 
         .history-panel.open {
             right: 0;
@@ -228,12 +218,12 @@
         .loss-text { color: #f23645; font-weight: 700; }
 
         /* Toast Notifications */
-        #toast-container {
-            position: absolute;
-            top: 60px;
-            left: 20px;
-            z-index: 100;
-        }
+                #toast-container {
+                    position: absolute;
+                    top: 20px;
+                    left: 20px;
+                    z-index: 100;
+                }
         .toast {
                     background: #1e222d;
                     border-left: 4px solid #2962ff;
