@@ -64,12 +64,24 @@
                 }
 
                 /* Chart Area - Half Screen Height */
-        #chart-container {
-            width: 100%;
-            height: 50vh;
-            position: relative;
-            border-bottom: 1px solid #2a2e39;
-        }
+                        #chart-container {
+                            width: 100%;
+                            height: 50vh;
+                            position: relative;
+                            border-bottom: 1px solid #2a2e39;
+                            overflow: hidden;
+                        }
+
+                        /* Trade Segment Line */
+                        .trade-line {
+                            position: absolute;
+                            height: 0;
+                            z-index: 39;
+                            pointer-events: none;
+                            transform: translateY(-50%);
+                        }
+                        .trade-line.call { border-top: 2px dashed #089981; }
+                        .trade-line.put { border-top: 2px dashed #f23645; }
 
         /* Mac-Style Bottom Dock Container */
         .dock-container {
@@ -565,30 +577,34 @@
         chart.timeScale().subscribeVisibleLogicalRangeChange(() => updateExpiryLines());
 
         // --- Execute Binary Trade ---
-        function executeTrade(type) {
-            const amount = parseFloat(document.getElementById('trade-amount').value);
-            const duration = parseInt(document.getElementById('trade-duration').value);
-            if (amount > balance || amount <= 0) { showToast("Invalid amount or insufficient funds."); return; }
-            balance -= amount; updateBalanceDisplay();
+                function executeTrade(type) {
+                    const amount = parseFloat(document.getElementById('trade-amount').value);
+                    const duration = parseInt(document.getElementById('trade-duration').value);
+                    if (amount > balance || amount <= 0) { showToast("Invalid amount or insufficient funds."); return; }
+                    balance -= amount; updateBalanceDisplay();
 
-            const expiryTime = Math.floor(Date.now() / 1000) + duration;
-            const vLine = document.createElement('div');
-            vLine.className = `trade-dot ${type.toLowerCase()}`;
-            vLine.innerHTML = `<div class="time-left">${duration}s</div>`;
-            document.getElementById('chart-container').appendChild(vLine);
+                    const entryTime = Date.now() / 1000;
+                    const expiryTime = Math.floor(entryTime) + duration;
+            
+                    const tLine = document.createElement('div');
+                    tLine.className = `trade-line ${type.toLowerCase()}`;
+                    document.getElementById('chart-container').appendChild(tLine);
 
-            const trade = {
-                id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
-                expiryTime, vLine,
-                line: candlestickSeries.createPriceLine({
-                    price: currentPrice, color: type === 'CALL' ? '#089981' : '#f23645', lineStyle: 2, title: `${type} $${amount}`
-                })
-            };
-            activeTrades.push(trade); 
-            renderTradesUI(); 
-            updateExpiryLines();
-            showToast(`${type} trade placed.`);
-        }
+                    const vLine = document.createElement('div');
+                    vLine.className = `trade-dot ${type.toLowerCase()}`;
+                    vLine.innerHTML = `<div class="time-left">${duration}s</div>`;
+                    document.getElementById('chart-container').appendChild(vLine);
+
+                    const trade = {
+                        id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
+                        entryTime, expiryTime, vLine, tLine
+                    };
+            
+                    activeTrades.push(trade); 
+                    renderTradesUI(); 
+                    updateExpiryLines();
+                    showToast(`${type} trade placed.`);
+                }
 
         // Timer Tick Loop
         setInterval(() => {
