@@ -235,17 +235,48 @@
             z-index: 100;
         }
         .toast {
-            background: #1e222d;
-            border-left: 4px solid #2962ff;
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-    </style>
-</head>
+                    background: #1e222d;
+                    border-left: 4px solid #2962ff;
+                    color: #fff;
+                    padding: 10px 15px;
+                    border-radius: 4px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                    font-size: 0.8rem;
+                    margin-bottom: 8px;
+                }
+
+                /* Expiry Checkpoint Line */
+                .expiry-line {
+                    position: absolute;
+                    top: 0;
+                    bottom: 26px; /* Avoid overlapping the time axis */
+                    width: 2px;
+                    z-index: 40;
+                    pointer-events: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+                .expiry-line.call { border-left: 2px dashed #089981; }
+                .expiry-line.put { border-left: 2px dashed #f23645; }
+        
+                .expiry-label {
+                    background: #1e222d;
+                    border: 1px solid #2a2e39;
+                    color: #fff;
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                    padding: 3px 6px;
+                    border-radius: 4px;
+                    margin-top: 15px;
+                    transform: translateX(-50%);
+                    white-space: nowrap;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+                }
+                .expiry-line.call .expiry-label { border-color: #089981; color: #089981; }
+                .expiry-line.put .expiry-label { border-color: #f23645; color: #f23645; }
+            </style>
+        </head>
 <body>
 
     <!-- Header -->
@@ -337,12 +368,13 @@
     </div>
 
     <script>
-        // --- Global State & Storage ---
-        let balance = parseFloat(localStorage.getItem('demo_balance_mac')) || 10000.00;
-        let currentPrice = 0.00;
-        let activeTrades = [];
-        let tradeHistory = [];
-        let ws = null;
+            // --- Global State & Storage ---
+            let balance = parseFloat(localStorage.getItem('demo_balance_mac')) || 10000.00;
+            let currentPrice = 0.00;
+            let lastCandleTime = 0;
+            let activeTrades = [];
+            let tradeHistory = [];
+            let ws = null;
 
         const balanceEl = document.getElementById('demo-balance');
         const priceEl = document.getElementById('live-price');
@@ -398,59 +430,105 @@
         }).observe(chartContainer);
 
         async function initLiveStream() {
-            // Historical
-            const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=100`);
-            const data = await response.json();
-            const cdata = data.map(d => ({ time: d[0] / 1000, open: d[1], high: d[2], low: d[3], close: d[4] }));
-            candlestickSeries.setData(cdata);
-            if(cdata.length) currentPrice = parseFloat(cdata[cdata.length-1].close);
+                    // Historical
+                    const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=100`);
+                    const data = await response.json();
+                    const cdata = data.map(d => ({ time: d[0] / 1000, open: d[1], high: d[2], low: d[3], close: d[4] }));
+                    candlestickSeries.setData(cdata);
+                    if(cdata.length) {
+                        currentPrice = parseFloat(cdata[cdata.length-1].close);
+                        lastCandleTime = cdata[cdata.length-1].time;
+                    }
             
-            // Web Socket
-            if (ws) ws.close();
-            ws = new WebSocket(`wss://stream.binance.com:9443/ws/btcusdt@kline_1m`);
-            ws.onmessage = (e) => {
-                const k = JSON.parse(e.data).k;
-                const candle = { time: k.t / 1000, open: k.o, high: k.h, low: k.l, close: k.c };
-                candlestickSeries.update(candle);
-                const price = parseFloat(k.c);
-                priceEl.innerText = price.toLocaleString();
-                priceEl.className = 'price-display ' + (price >= currentPrice ? 'price-up' : 'price-down');
-                currentPrice = price;
-            };
-        }
+                    // Web Socket
+                    if (ws) ws.close();
+                    ws = new WebSocket(`wss://stream.binance.com:9443/ws/btcusdt@kline_1m`);
+                    ws.onmessage = (e) => {
+                        const k = JSON.parse(e.data).k;
+                        const candle = { time: k.t / 1000, open: k.o, high: k.h, low: k.l, close: k.c };
+                        candlestickSeries.update(candle);
+                        lastCandleTime = candle.time;
+                        const price = parseFloat(k.c);
+                        priceEl.innerText = price.toLocaleString();
+                        priceEl.className = 'price-display ' + (price >= currentPrice ? 'price-up' : 'price-down');
+                        currentPrice = price;
+                        if(typeof updateExpiryLines === 'function') updateExpiryLines();
+                    };
+                }
 
-        // --- Binary Trade Logic (Copied from previous) ---
-        function executeTrade(type) {
-            const amount = parseFloat(document.getElementById('trade-amount').value);
-            const duration = parseInt(document.getElementById('trade-duration').value);
-            if (amount > balance || amount <= 0) { showToast("Invalid amount or insufficient funds."); return; }
-            balance -= amount; updateBalanceDisplay();
+                function updateExpiryLines() {
+                    if (!activeTrades.length) return;
+                    const logicalRange = chart.timeScale().getVisibleLogicalRange();
+                    if (!logicalRange) return;
+                    const x1 = chart.timeScale().logicalToCoordinate(logicalRange.to - 1) || 0;
+                    const x2 = chart.timeScale().logicalToCoordinate(logicalRange.to) || 0;
+                    const barSpacing = Math.max(x2 - x1, 2);
 
-            const trade = {
-                id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
-                line: candlestickSeries.createPriceLine({
-                    price: currentPrice, color: type === 'CALL' ? '#089981' : '#f23645', lineStyle: 2, title: `${type} $${amount}`
-                })
-            };
-            activeTrades.push(trade); renderTradesUI();
-            showToast(`${type} placed.`);
-        }
+                    const lastCandleX = chart.timeScale().timeToCoordinate(lastCandleTime);
+                    if (lastCandleX === null) return;
+
+                    activeTrades.forEach(t => {
+                        if (t.vLine) {
+                            const timeDiff = t.expiryTime - lastCandleTime;
+                            const futureX = lastCandleX + (timeDiff / 60) * barSpacing;
+                    
+                            if (futureX >= 0 && futureX <= document.getElementById('chart-container').clientWidth) {
+                                t.vLine.style.display = 'flex';
+                                t.vLine.style.left = futureX + 'px';
+                                if(t.vLine.querySelector('.time-left')) {
+                                    t.vLine.querySelector('.time-left').innerText = t.remaining + 's';
+                                }
+                            } else {
+                                t.vLine.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+        
+                chart.timeScale().subscribeVisibleTimeRangeChange(() => updateExpiryLines());
+                chart.timeScale().subscribeVisibleLogicalRangeChange(() => updateExpiryLines());
+
+                // --- Binary Trade Logic (Copied from previous) ---
+                function executeTrade(type) {
+                            const amount = parseFloat(document.getElementById('trade-amount').value);
+                            const duration = parseInt(document.getElementById('trade-duration').value);
+                            if (amount > balance || amount <= 0) { showToast("Invalid amount or insufficient funds."); return; }
+                            balance -= amount; updateBalanceDisplay();
+
+                            const expiryTime = Math.floor(Date.now() / 1000) + duration;
+                            const vLine = document.createElement('div');
+                            vLine.className = `expiry-line ${type.toLowerCase()}`;
+                            vLine.innerHTML = `<div class="expiry-label"><i class="fa-solid fa-flag-checkered"></i> <span class="time-left">${duration}s</span></div>`;
+                            document.getElementById('chart-container').appendChild(vLine);
+
+                            const trade = {
+                                id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
+                                expiryTime, vLine,
+                                line: candlestickSeries.createPriceLine({
+                                    price: currentPrice, color: type === 'CALL' ? '#089981' : '#f23645', lineStyle: 2, title: `${type} $${amount}`
+                                })
+                            };
+                            activeTrades.push(trade); renderTradesUI(); updateExpiryLines();
+                            showToast(`${type} placed.`);
+                        }
 
         setInterval(() => {
-            if (!activeTrades.length) return;
-            for (let i = activeTrades.length - 1; i >= 0; i--) {
-                const t = activeTrades[i];
-                t.remaining--;
-                if (t.remaining <= 0) {
-                    candlestickSeries.removePriceLine(t.line);
-                    const win = (t.type === 'CALL' && currentPrice > t.entryPrice) || (t.type === 'PUT' && currentPrice < t.entryPrice);
-                    if (win) { balance += t.amount * 1.85; updateBalanceDisplay(); t.status = 'WIN'; }
-                    else { t.status = 'LOSS'; }
-                    activeTrades.splice(i, 1); tradeHistory.unshift(t); showToast(win ? "Profit!" : "Loss.");
-                }
-            }
-            renderTradesUI();
-        }, 1000);
+                    if (!activeTrades.length) return;
+                    for (let i = activeTrades.length - 1; i >= 0; i--) {
+                        const t = activeTrades[i];
+                        t.remaining--;
+                        if (t.remaining <= 0) {
+                            candlestickSeries.removePriceLine(t.line);
+                            if (t.vLine) t.vLine.remove();
+                            const win = (t.type === 'CALL' && currentPrice > t.entryPrice) || (t.type === 'PUT' && currentPrice < t.entryPrice);
+                            if (win) { balance += t.amount * 1.85; updateBalanceDisplay(); t.status = 'WIN'; }
+                            else { t.status = 'LOSS'; }
+                            activeTrades.splice(i, 1); tradeHistory.unshift(t); showToast(win ? "Profit!" : "Loss.");
+                        }
+                    }
+                    renderTradesUI();
+                    if(typeof updateExpiryLines === 'function') updateExpiryLines();
+                }, 1000);
 
         function renderTradesUI() {
             if (!activeTrades.length && !tradeHistory.length) return;
