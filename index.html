@@ -96,20 +96,20 @@
 
                 /* Individual Minimal Icon Controls */
                 .dock-item {
-                    position: relative;
-                    min-width: 35px;
-                    height: 35px;
-                    padding: 0 6px;
-                    background-color: transparent;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 4px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    color: #787b86;
-                }
+                                    position: relative;
+                                    min-width: 35px;
+                                    height: 35px;
+                                    padding: 0 6px;
+                                    background-color: transparent;
+                                    border-radius: 8px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 4px;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                    color: #000000;
+                                }
 
                 .dock-item:hover {
                     transform: translateY(-2px);
@@ -131,10 +131,10 @@
         }
 
         .dock-item .value-overlay {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #fff;
-        }
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    color: #000000;
+                }
 
         /* Call & Put Buttons */
                 .dock-item.btn-call {
@@ -442,15 +442,15 @@
         // --- Chart Setup ---
                 const chartContainer = document.getElementById('chart-container');
                 const chart = LightweightCharts.createChart(chartContainer, {
-                    layout: { background: { color: '#000000' }, textColor: '#d1d4dc' },
-                    grid: { vertLines: { color: '#1e222d' }, horzLines: { color: '#1e222d' } },
-                    timeScale: { borderColor: '#2a2e39', timeVisible: true, secondsVisible: true, rightOffset: 12 },
-                    rightPriceScale: { borderColor: '#2a2e39' },
-                });
+                    layout: { background: { color: '#f5f1e8' }, textColor: '#333333' },
+                                        grid: { vertLines: { color: '#e5ded0' }, horzLines: { color: '#e5ded0' } },
+                                        timeScale: { borderColor: '#d8cfb8', timeVisible: true, secondsVisible: true, rightOffset: 12 },
+                                        rightPriceScale: { borderColor: '#d8cfb8' },
+                                    });
 
-        const candlestickSeries = chart.addCandlestickSeries({
-            upColor: '#089981', downColor: '#f23645', borderVisible: false, wickUpColor: '#089981', wickDownColor: '#f23645',
-        });
+                            const candlestickSeries = chart.addCandlestickSeries({
+                                upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+                            });
 
         new ResizeObserver(entries => {
             if (entries.length === 0 || !entries[0].contentRect) return;
