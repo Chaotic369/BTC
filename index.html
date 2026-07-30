@@ -28,23 +28,18 @@
                 }
 
         /* Top Price Floating Badge */
-        .price-pill {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(30, 34, 45, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 8px 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 40;
-            pointer-events: none;
-        }
+                .price-pill {
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    background: transparent;
+                    padding: 8px 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    z-index: 40;
+                    pointer-events: none;
+                }
 
         .live-price-container, .account-bar {
             display: flex;
@@ -90,44 +85,39 @@
         }
 
         .mac-dock {
-            pointer-events: auto;
-            background: rgba(30, 34, 45, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+                    pointer-events: auto;
+                    background: transparent;
+                    padding: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
 
-        /* Individual Minimal Icon Controls */
-        .dock-item {
-            position: relative;
-            width: 45px;
-            height: 45px;
-            background-color: #1e222d;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            color: #787b86;
-        }
+                /* Individual Minimal Icon Controls */
+                .dock-item {
+                    position: relative;
+                    min-width: 35px;
+                    height: 35px;
+                    padding: 0 6px;
+                    background-color: transparent;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 4px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    color: #787b86;
+                }
 
-        .dock-item:hover {
-            transform: translateY(-3px);
-            background-color: #2a2e39;
-        }
+                .dock-item:hover {
+                    transform: translateY(-2px);
+                    color: #d1d4dc;
+                }
 
-        .dock-item i {
-            font-size: 1.1rem;
-        }
+                .dock-item i {
+                    font-size: 1rem;
+                }
 
         /* Overlayed Inputs & Selects */
         .dock-item input, .dock-item select {
@@ -146,30 +136,32 @@
         }
 
         /* Call & Put Buttons */
-        .dock-item.btn-call {
-            background: linear-gradient(135deg, #089981 0%, #056656 100%);
-            color: #fff;
-        }
-        .dock-item.btn-put {
-            background: linear-gradient(135deg, #f23645 0%, #b22532 100%);
-            color: #fff;
-        }
+                .dock-item.btn-call {
+                    background: transparent;
+                    color: #089981;
+                }
+                .dock-item.btn-call:hover {
+                    color: #0bd1b0;
+                }
+        
+                .dock-item.btn-put {
+                    background: transparent;
+                    color: #f23645;
+                }
+                .dock-item.btn-put:hover {
+                    color: #ff4d5e;
+                }
 
-        /* Floating Status Pill (Balance Only) */
-        .status-pill {
-            pointer-events: auto;
-            background: rgba(30, 34, 45, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 8px 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            margin-top: 12px;
-        }
+                /* Floating Status Pill (Balance Only) */
+                .status-pill {
+                    pointer-events: auto;
+                    background: transparent;
+                    padding: 4px 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    margin-top: 8px;
+                }
 
         /* Expiry Checkpoint Dot (Olymp Trade style) */
         .trade-dot {
