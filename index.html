@@ -457,33 +457,35 @@
                 }
 
                 function updateExpiryLines() {
-                    if (!activeTrades.length) return;
-                    const logicalRange = chart.timeScale().getVisibleLogicalRange();
-                    if (!logicalRange) return;
-                    const x1 = chart.timeScale().logicalToCoordinate(logicalRange.to - 1) || 0;
-                    const x2 = chart.timeScale().logicalToCoordinate(logicalRange.to) || 0;
-                    const barSpacing = Math.max(x2 - x1, 2);
+                            if (!activeTrades.length) return;
+                            const logicalRange = chart.timeScale().getVisibleLogicalRange();
+                            if (!logicalRange) return;
+                            const x1 = chart.timeScale().logicalToCoordinate(logicalRange.to - 1) || 0;
+                            const x2 = chart.timeScale().logicalToCoordinate(logicalRange.to) || 0;
+                            const barSpacing = Math.max(x2 - x1, 2);
 
-                    const lastCandleX = chart.timeScale().timeToCoordinate(lastCandleTime);
-                    if (lastCandleX === null) return;
+                            const lastCandleX = chart.timeScale().timeToCoordinate(lastCandleTime);
+                            if (lastCandleX === null) return;
 
-                    activeTrades.forEach(t => {
-                        if (t.vLine) {
-                            const timeDiff = t.expiryTime - lastCandleTime;
-                            const futureX = lastCandleX + (timeDiff / 60) * barSpacing;
+                            activeTrades.forEach(t => {
+                                if (t.vLine) {
+                                    const timeDiff = t.expiryTime - lastCandleTime;
+                                    const futureX = lastCandleX + (timeDiff / 60) * barSpacing;
+                                    const priceY = candlestickSeries.priceToCoordinate(t.entryPrice);
                     
-                            if (futureX >= 0 && futureX <= document.getElementById('chart-container').clientWidth) {
-                                t.vLine.style.display = 'flex';
-                                t.vLine.style.left = futureX + 'px';
-                                if(t.vLine.querySelector('.time-left')) {
-                                    t.vLine.querySelector('.time-left').innerText = t.remaining + 's';
+                                    if (futureX >= 0 && futureX <= document.getElementById('chart-container').clientWidth && priceY !== null) {
+                                        t.vLine.style.display = 'block';
+                                        t.vLine.style.left = futureX + 'px';
+                                        t.vLine.style.top = priceY + 'px';
+                                        if(t.vLine.querySelector('.time-left')) {
+                                            t.vLine.querySelector('.time-left').innerText = t.remaining + 's';
+                                        }
+                                    } else {
+                                        t.vLine.style.display = 'none';
+                                    }
                                 }
-                            } else {
-                                t.vLine.style.display = 'none';
-                            }
+                            });
                         }
-                    });
-                }
         
                 chart.timeScale().subscribeVisibleTimeRangeChange(() => updateExpiryLines());
                 chart.timeScale().subscribeVisibleLogicalRangeChange(() => updateExpiryLines());
@@ -496,10 +498,10 @@
                             balance -= amount; updateBalanceDisplay();
 
                             const expiryTime = Math.floor(Date.now() / 1000) + duration;
-                            const vLine = document.createElement('div');
-                            vLine.className = `expiry-line ${type.toLowerCase()}`;
-                            vLine.innerHTML = `<div class="expiry-label"><i class="fa-solid fa-flag-checkered"></i> <span class="time-left">${duration}s</span></div>`;
-                            document.getElementById('chart-container').appendChild(vLine);
+                                        const vLine = document.createElement('div');
+                                        vLine.className = `trade-dot ${type.toLowerCase()}`;
+                                        vLine.innerHTML = `<div class="time-left">${duration}s</div>`;
+                                        document.getElementById('chart-container').appendChild(vLine);
 
                             const trade = {
                                 id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
