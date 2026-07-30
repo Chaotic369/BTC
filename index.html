@@ -542,36 +542,47 @@
         }
 
         // --- Projected Trade Checkpoint Position (Olymp Trade style) ---
-        function updateExpiryLines() {
-            if (!activeTrades.length) return;
-            const logicalRange = chart.timeScale().getVisibleLogicalRange();
-            if (!logicalRange) return;
-            const x1 = chart.timeScale().logicalToCoordinate(logicalRange.to - 1) || 0;
-            const x2 = chart.timeScale().logicalToCoordinate(logicalRange.to) || 0;
-            const barSpacing = Math.max(x2 - x1, 2);
+                function updateExpiryLines() {
+                    if (!activeTrades.length) return;
+                    const logicalRange = chart.timeScale().getVisibleLogicalRange();
+                    if (!logicalRange) return;
+                    const x1 = chart.timeScale().logicalToCoordinate(logicalRange.to - 1) || 0;
+                    const x2 = chart.timeScale().logicalToCoordinate(logicalRange.to) || 0;
+                    const barSpacing = Math.max(x2 - x1, 2);
 
-            const lastCandleX = chart.timeScale().timeToCoordinate(lastCandleTime);
-            if (lastCandleX === null) return;
+                    const lastCandleX = chart.timeScale().timeToCoordinate(lastCandleTime);
+                    if (lastCandleX === null) return;
 
-            activeTrades.forEach(t => {
-                if (t.vLine) {
-                    const timeDiff = t.expiryTime - lastCandleTime;
-                    const futureX = lastCandleX + (timeDiff / currentTfSeconds) * barSpacing;
-                    const priceY = candlestickSeries.priceToCoordinate(t.entryPrice);
+                    activeTrades.forEach(t => {
+                        if (t.vLine && t.tLine) {
+                            const entryOffset = t.entryTime - lastCandleTime;
+                            const expiryOffset = t.expiryTime - lastCandleTime;
                     
-                    if (futureX >= 0 && futureX <= document.getElementById('chart-container').clientWidth && priceY !== null) {
-                        t.vLine.style.display = 'block';
-                        t.vLine.style.left = futureX + 'px';
-                        t.vLine.style.top = priceY + 'px';
-                        if(t.vLine.querySelector('.time-left')) {
-                            t.vLine.querySelector('.time-left').innerText = t.remaining + 's';
+                            const entryX = lastCandleX + (entryOffset / currentTfSeconds) * barSpacing;
+                            const futureX = lastCandleX + (expiryOffset / currentTfSeconds) * barSpacing;
+                            const priceY = candlestickSeries.priceToCoordinate(t.entryPrice);
+                    
+                            if (priceY !== null) {
+                                // Segment Line
+                                t.tLine.style.display = 'block';
+                                t.tLine.style.top = priceY + 'px';
+                                t.tLine.style.left = entryX + 'px';
+                                t.tLine.style.width = Math.max(0, futureX - entryX) + 'px';
+
+                                // End Dot
+                                t.vLine.style.display = 'block';
+                                t.vLine.style.left = futureX + 'px';
+                                t.vLine.style.top = priceY + 'px';
+                                if(t.vLine.querySelector('.time-left')) {
+                                    t.vLine.querySelector('.time-left').innerText = t.remaining + 's';
+                                }
+                            } else {
+                                t.tLine.style.display = 'none';
+                                t.vLine.style.display = 'none';
+                            }
                         }
-                    } else {
-                        t.vLine.style.display = 'none';
-                    }
+                    });
                 }
-            });
-        }
 
         chart.timeScale().subscribeVisibleTimeRangeChange(() => updateExpiryLines());
         chart.timeScale().subscribeVisibleLogicalRangeChange(() => updateExpiryLines());
@@ -607,15 +618,15 @@
                 }
 
         // Timer Tick Loop
-        setInterval(() => {
-            if (!activeTrades.length) return;
-            for (let i = activeTrades.length - 1; i >= 0; i--) {
-                const t = activeTrades[i];
-                t.remaining--;
-                if (t.remaining <= 0) {
-                    candlestickSeries.removePriceLine(t.line);
-                    if (t.vLine) t.vLine.remove();
-                    const win = (t.type === 'CALL' && currentPrice > t.entryPrice) || (t.type === 'PUT' && currentPrice < t.entryPrice);
+                setInterval(() => {
+                    if (!activeTrades.length) return;
+                    for (let i = activeTrades.length - 1; i >= 0; i--) {
+                        const t = activeTrades[i];
+                        t.remaining--;
+                        if (t.remaining <= 0) {
+                            if (t.tLine) t.tLine.remove();
+                            if (t.vLine) t.vLine.remove();
+                            const win = (t.type === 'CALL' && currentPrice > t.entryPrice) || (t.type === 'PUT' && currentPrice < t.entryPrice);
                     if (win) { 
                         balance += t.amount * 1.85; 
                         updateBalanceDisplay(); 
