@@ -258,16 +258,34 @@
                     z-index: 100;
                 }
         .toast {
-            background: #1e222d;
-            border-left: 4px solid #2962ff;
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-    </style>
+                    background: #1e222d;
+                    border-left: 4px solid #2962ff;
+                    color: #fff;
+                    padding: 10px 15px;
+                    border-radius: 4px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                    font-size: 0.8rem;
+                    margin-bottom: 8px;
+                }
+
+                /* Future Expiry Countdown Dots */
+                .trade-dot {
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: #1e222d;
+                    border: 1px solid #2a2e39;
+                    border-radius: 12px;
+                    padding: 2px 10px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    pointer-events: none;
+                    z-index: 30;
+                }
+                .trade-dot.call { color: #089981; border-color: #089981; }
+                .trade-dot.put { color: #f23645; border-color: #f23645; }
+                .trade-dot .time-left { font-family: monospace; }
+            </style>
 </head>
 <body>
     
@@ -426,7 +444,7 @@
                 const chart = LightweightCharts.createChart(chartContainer, {
                     layout: { background: { color: '#000000' }, textColor: '#d1d4dc' },
                     grid: { vertLines: { color: '#1e222d' }, horzLines: { color: '#1e222d' } },
-                    timeScale: { borderColor: '#2a2e39', timeVisible: true, secondsVisible: true },
+                    timeScale: { borderColor: '#2a2e39', timeVisible: true, secondsVisible: true, rightOffset: 12 },
                     rightPriceScale: { borderColor: '#2a2e39' },
                 });
 
@@ -499,70 +517,84 @@
                         }
 
                         // --- Execute Binary Trade ---
-                                        function executeTrade(type) {
-                                            const amount = parseFloat(document.getElementById('trade-amount').value);
-                                            const duration = parseInt(document.getElementById('trade-duration').value);
-                                            if (amount > balance || amount <= 0) { showToast("Invalid amount or insufficient funds."); return; }
-                                            balance -= amount; updateBalanceDisplay();
+                                                function executeTrade(type) {
+                                                    const amount = parseFloat(document.getElementById('trade-amount').value);
+                                                    const duration = parseInt(document.getElementById('trade-duration').value);
+                                                    if (amount > balance || amount <= 0) { showToast("Invalid amount or insufficient funds."); return; }
+                                                    balance -= amount; updateBalanceDisplay();
 
-                                            const trade = {
-                                                id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
-                                                line: candlestickSeries.createPriceLine({
-                                                    price: currentPrice, color: type === 'CALL' ? '#089981' : '#f23645', lineStyle: 2, title: `${type} $${amount}`
-                                                })
-                                            };
-            
-                                            activeTrades.push(trade); 
-                                            renderTradesUI(); 
-                                            showToast(`${type} trade placed.`);
-                                        }
-                    balance -= amount; updateBalanceDisplay();
+                                                    const entryTime = Math.floor(Date.now() / 1000);
+                                                    const expiryTime = entryTime + duration;
+                                                    const lineColor = type === 'CALL' ? '#089981' : '#f23645';
 
-                    const entryTime = Date.now() / 1000;
-                    const expiryTime = Math.floor(entryTime) + duration;
+                                                    const expiryLine = chart.addLineSeries({
+                                                        color: lineColor,
+                                                        lineWidth: 2,
+                                                        lineStyle: 2,
+                                                        priceLineVisible: false,
+                                                        lastValueVisible: false,
+                                                        crosshairMarkerVisible: false,
+                                                    });
+                                                    expiryLine.setData([
+                                                        { time: entryTime, value: currentPrice },
+                                                        { time: expiryTime, value: currentPrice }
+                                                    ]);
+                                                    expiryLine.setMarkers([
+                                                        { time: expiryTime, position: 'inBar', color: lineColor, shape: 'circle', text: `${type} $${amount}` }
+                                                    ]);
+                                                    chart.timeScale().applyOptions({ rightOffset: Math.max(12, Math.ceil(duration / currentTfSeconds) + 2) });
 
-                    const vLine = document.createElement('div');
-                    vLine.className = `trade-dot ${type.toLowerCase()}`;
-                    vLine.innerHTML = `<div class="time-left">${duration}s</div>`;
-                    document.getElementById('chart-container').appendChild(vLine);
+                                                    const vLine = document.createElement('div');
+                                                    vLine.className = `trade-dot ${type.toLowerCase()}`;
+                                                    vLine.innerHTML = `<div class="time-left">${duration}s</div>`;
+                                                    document.getElementById('chart-container').appendChild(vLine);
 
-                    const trade = {
-                        id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
-                        expiryTime, vLine,
-                        line: candlestickSeries.createPriceLine({
-                            price: currentPrice, color: type === 'CALL' ? '#089981' : '#f23645', lineStyle: 2, title: `${type} $${amount}`
-                        })
-                    };
-            
-                    activeTrades.push(trade); 
-                    renderTradesUI(); 
-                    updateExpiryLines();
-                    showToast(`${type} trade placed.`);
-                }
+                                                    const trade = {
+                                                        id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
+                                                        entryTime, expiryTime, vLine, expiryLine
+                                                    };
+
+                                                    activeTrades.push(trade);
+                                                    renderTradesUI();
+                                                    updateExpiryLines();
+                                                    showToast(`${type} trade placed.`);
+                                                }
+
+                                                // --- Keep Future Expiry Points In Sync ---
+                                                function updateExpiryLines() {
+                                                    activeTrades.forEach(t => {
+                                                        if (t.vLine) {
+                                                            const label = t.vLine.querySelector('.time-left');
+                                                            if (label) label.innerText = `${t.remaining}s`;
+                                                        }
+                                                    });
+                                                }
 
         // Timer Tick Loop
-                        setInterval(() => {
-                            if (!activeTrades.length) return;
-                            for (let i = activeTrades.length - 1; i >= 0; i--) {
-                                const t = activeTrades[i];
-                                t.remaining--;
-                                if (t.remaining <= 0) {
-                                    candlestickSeries.removePriceLine(t.line);
-                                    const win = (t.type === 'CALL' && currentPrice > t.entryPrice) || (t.type === 'PUT' && currentPrice < t.entryPrice);
-                            if (win) { 
-                                balance += t.amount * 1.85; 
-                                updateBalanceDisplay(); 
-                                t.status = 'WIN'; 
-                            } else { 
-                                t.status = 'LOSS'; 
+                                setInterval(() => {
+                                    if (!activeTrades.length) return;
+                                    for (let i = activeTrades.length - 1; i >= 0; i--) {
+                                        const t = activeTrades[i];
+                                        t.remaining--;
+                                        if (t.remaining <= 0) {
+                                            if (t.expiryLine) chart.removeSeries(t.expiryLine);
+                                            if (t.vLine && t.vLine.parentNode) t.vLine.parentNode.removeChild(t.vLine);
+                                            const win = (t.type === 'CALL' && currentPrice > t.entryPrice) || (t.type === 'PUT' && currentPrice < t.entryPrice);
+                                    if (win) { 
+                                        balance += t.amount * 1.85; 
+                                        updateBalanceDisplay(); 
+                                        t.status = 'WIN'; 
+                                    } else { 
+                                        t.status = 'LOSS'; 
+                                    }
+                                    activeTrades.splice(i, 1); 
+                                    tradeHistory.unshift(t); 
+                                    showToast(win ? "Trade Win!" : "Trade Loss.");
+                                }
                             }
-                            activeTrades.splice(i, 1); 
-                            tradeHistory.unshift(t); 
-                            showToast(win ? "Trade Win!" : "Trade Loss.");
-                        }
-                    }
-                    renderTradesUI();
-                }, 1000);
+                            updateExpiryLines();
+                            renderTradesUI();
+                        }, 1000);
 
         function renderTradesUI() {
             if (!activeTrades.length && !tradeHistory.length) return;
