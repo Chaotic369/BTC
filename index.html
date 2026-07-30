@@ -131,18 +131,10 @@
         }
 
         .dock-item i {
-            font-size: 1.2rem;
-            margin-bottom: 2px;
-        }
+                    font-size: 1.5rem;
+                }
 
-        .dock-item .label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        /* Specific styles for Input/Select "Icons" */
+                /* Specific styles for Input/Select "Icons" */
         .dock-item input, .dock-item select {
             position: absolute;
             width: 100%;
@@ -279,62 +271,56 @@
     <div style="flex: 1; min-height: 20vh;"></div>
 
     <!-- Mac-Style Center Bottom Dock -->
-    <div class="dock-container">
-        <div class="mac-dock">
+        <div class="dock-container">
+            <div class="mac-dock">
             
-            <!-- Amount Control (Square App style) -->
-            <div class="dock-item">
-                <i class="fa-solid fa-dollar-sign"></i>
-                <div class="label">Invest</div>
-                <div id="amount-display" class="value-overlay">100</div>
-                <input type="number" id="trade-amount" value="100" min="1" step="10" oninput="updateDisplays()">
-            </div>
+                <!-- Amount Control (Square App style) -->
+                <div class="dock-item">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                    <div id="amount-display" class="value-overlay">100</div>
+                    <input type="number" id="trade-amount" value="100" min="1" step="10" oninput="updateDisplays()">
+                </div>
 
-            <!-- Duration Control (Square App style) -->
-            <div class="dock-item">
-                <i class="fa-regular fa-clock"></i>
-                <div class="label">Time</div>
-                <div id="time-display" class="value-overlay">30s</div>
-                <select id="trade-duration" onchange="updateDisplays()">
-                    <option value="5">5s</option>
-                    <option value="10">10s</option>
-                    <option value="30" selected>30s</option>
-                    <option value="60">1m</option>
-                    <option value="300">5m</option>
-                </select>
-            </div>
+                <!-- Duration Control (Square App style) -->
+                <div class="dock-item">
+                    <i class="fa-regular fa-clock"></i>
+                    <div id="time-display" class="value-overlay">30s</div>
+                    <select id="trade-duration" onchange="updateDisplays()">
+                        <option value="5">5s</option>
+                        <option value="10">10s</option>
+                        <option value="30" selected>30s</option>
+                        <option value="60">1m</option>
+                        <option value="300">5m</option>
+                    </select>
+                </div>
 
-            <!-- Separator -->
-            <div style="width:1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+                <!-- Separator -->
+                <div style="width:1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
 
-            <!-- Higher (CALL) Button (Square App style) -->
-            <div class="dock-item btn-call" onclick="executeTrade('CALL')">
-                <i class="fa-solid fa-arrow-trend-up"></i>
-                <div class="label">Higher</div>
-            </div>
+                <!-- Higher (CALL) Button (Square App style) -->
+                <div class="dock-item btn-call" onclick="executeTrade('CALL')">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </div>
 
-            <!-- Lower (PUT) Button (Square App style) -->
-            <div class="dock-item btn-put" onclick="executeTrade('PUT')">
-                <i class="fa-solid fa-arrow-trend-down"></i>
-                <div class="label">Lower</div>
-            </div>
+                <!-- Lower (PUT) Button (Square App style) -->
+                <div class="dock-item btn-put" onclick="executeTrade('PUT')">
+                    <i class="fa-solid fa-arrow-trend-down"></i>
+                </div>
 
-            <!-- Separator -->
-            <div style="width:1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+                <!-- Separator -->
+                <div style="width:1px; height: 40px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
 
-            <!-- History Toggle (Square App style) -->
-            <div class="dock-item" onclick="toggleHistory()">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <div class="label">Journal</div>
-            </div>
+                <!-- History Toggle (Square App style) -->
+                <div class="dock-item" onclick="toggleHistory()">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
 
-            <!-- Refill Button (Square App style) -->
-            <div class="dock-item" style="color: #2962ff;" onclick="refillBalance()">
-                <i class="fa-solid fa-rotate-right"></i>
-                <div class="label">Refill</div>
+                <!-- Refill Button (Square App style) -->
+                <div class="dock-item" style="color: #2962ff;" onclick="refillBalance()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Trade History Panel -->
     <div id="history-panel" class="history-panel">
