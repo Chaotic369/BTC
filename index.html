@@ -245,36 +245,36 @@
                     margin-bottom: 8px;
                 }
 
-                /* Expiry Checkpoint Line */
-                .expiry-line {
-                    position: absolute;
-                    top: 0;
-                    bottom: 26px; /* Avoid overlapping the time axis */
-                    width: 2px;
-                    z-index: 40;
-                    pointer-events: none;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                }
-                .expiry-line.call { border-left: 2px dashed #089981; }
-                .expiry-line.put { border-left: 2px dashed #f23645; }
+                /* Expiry Checkpoint Dot */
+                        .trade-dot {
+                            position: absolute;
+                            width: 14px;
+                            height: 14px;
+                            border-radius: 50%;
+                            transform: translate(-50%, -50%);
+                            z-index: 40;
+                            pointer-events: none;
+                            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+                        }
+                        .trade-dot.call { background-color: #089981; border: 2px solid #fff; }
+                        .trade-dot.put { background-color: #f23645; border: 2px solid #fff; }
         
-                .expiry-label {
-                    background: #1e222d;
-                    border: 1px solid #2a2e39;
-                    color: #fff;
-                    font-size: 0.65rem;
-                    font-weight: 700;
-                    padding: 3px 6px;
-                    border-radius: 4px;
-                    margin-top: 15px;
-                    transform: translateX(-50%);
-                    white-space: nowrap;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-                }
-                .expiry-line.call .expiry-label { border-color: #089981; color: #089981; }
-                .expiry-line.put .expiry-label { border-color: #f23645; color: #f23645; }
+                        .trade-dot .time-left {
+                            position: absolute;
+                            top: -24px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: #1e222d;
+                            border: 1px solid #2a2e39;
+                            color: #fff;
+                            font-size: 0.65rem;
+                            font-weight: 700;
+                            padding: 2px 6px;
+                            border-radius: 4px;
+                            white-space: nowrap;
+                        }
+                        .trade-dot.call .time-left { color: #089981; border-color: #089981; }
+                        .trade-dot.put .time-left { color: #f23645; border-color: #f23645; }
             </style>
         </head>
 <body>
