@@ -270,21 +270,24 @@
 
                 /* Future Expiry Countdown Dots */
                 .trade-dot {
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    background: #1e222d;
-                    border: 1px solid #2a2e39;
-                    border-radius: 12px;
-                    padding: 2px 10px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    pointer-events: none;
-                    z-index: 30;
-                }
-                .trade-dot.call { color: #089981; border-color: #089981; }
-                .trade-dot.put { color: #f23645; border-color: #f23645; }
-                .trade-dot .time-left { font-family: monospace; }
+                                    position: absolute;
+                                    background: #1e222d;
+                                    border: 1px solid #2a2e39;
+                                    border-radius: 10px;
+                                    padding: 1px 6px;
+                                    font-size: 0.6rem;
+                                    font-weight: 700;
+                                    pointer-events: none;
+                                    z-index: 30;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 3px;
+                                    transform: translate(-50%, -50%);
+                                    white-space: nowrap;
+                                }
+                                .trade-dot.call { color: #089981; border-color: #089981; }
+                                .trade-dot.put { color: #f23645; border-color: #f23645; }
+                                .trade-dot .time-left { font-family: monospace; font-size: 0.55rem; }
             </style>
 </head>
 <body>
@@ -540,14 +543,14 @@
                                                         { time: expiryTime, value: currentPrice }
                                                     ]);
                                                     expiryLine.setMarkers([
-                                                        { time: expiryTime, position: 'inBar', color: lineColor, shape: 'circle', text: `${type} $${amount}` }
-                                                    ]);
+                                                                                                            { time: expiryTime, position: 'inBar', color: lineColor, shape: 'circle', text: '' }
+                                                                                                        ]);
                                                     chart.timeScale().applyOptions({ rightOffset: Math.max(12, Math.ceil(duration / currentTfSeconds) + 2) });
 
                                                     const vLine = document.createElement('div');
-                                                    vLine.className = `trade-dot ${type.toLowerCase()}`;
-                                                    vLine.innerHTML = `<div class="time-left">${duration}s</div>`;
-                                                    document.getElementById('chart-container').appendChild(vLine);
+                                                                                                        vLine.className = `trade-dot ${type.toLowerCase()}`;
+                                                                                                        vLine.innerHTML = `<i class="fa-solid fa-flag" style="font-size:0.55rem;"></i><span class="time-left">${duration}s</span>`;
+                                                                                                        document.getElementById('chart-container').appendChild(vLine);
 
                                                     const trade = {
                                                         id: Date.now(), type, amount, entryPrice: currentPrice, duration, remaining: duration, status: 'ACTIVE',
@@ -561,14 +564,23 @@
                                                 }
 
                                                 // --- Keep Future Expiry Points In Sync ---
-                                                function updateExpiryLines() {
-                                                    activeTrades.forEach(t => {
-                                                        if (t.vLine) {
-                                                            const label = t.vLine.querySelector('.time-left');
-                                                            if (label) label.innerText = `${t.remaining}s`;
-                                                        }
-                                                    });
-                                                }
+                                                                                                function updateExpiryLines() {
+                                                                                                    activeTrades.forEach(t => {
+                                                                                                        if (t.vLine) {
+                                                                                                            const x = chart.timeScale().timeToCoordinate(t.expiryTime);
+                                                                                                            const y = candlestickSeries.priceToCoordinate(t.entryPrice);
+                                                                                                            if (x !== null && y !== null) {
+                                                                                                                t.vLine.style.left = x + 'px';
+                                                                                                                t.vLine.style.top = y + 'px';
+                                                                                                                t.vLine.style.display = 'flex';
+                                                                                                            } else {
+                                                                                                                t.vLine.style.display = 'none';
+                                                                                                            }
+                                                                                                            const label = t.vLine.querySelector('.time-left');
+                                                                                                            if (label) label.innerText = `${t.remaining}s`;
+                                                                                                        }
+                                                                                                    });
+                                                                                                }
 
         // Timer Tick Loop
                                 setInterval(() => {
