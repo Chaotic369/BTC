@@ -549,7 +549,7 @@
 
                                                     const vLine = document.createElement('div');
                                                                                                         vLine.className = `trade-dot ${type.toLowerCase()}`;
-                                                                                                        vLine.innerHTML = `<i class="fa-solid fa-flag" style="font-size:0.55rem;"></i><span class="time-left">${duration}s</span>`;
+                                                                                                        vLine.innerHTML = `<span class="time-left">${duration}s</span>`;
                                                                                                         document.getElementById('chart-container').appendChild(vLine);
 
                                                     const trade = {
@@ -565,15 +565,32 @@
 
                                                 // --- Keep Future Expiry Points In Sync ---
                                                                                                 function updateExpiryLines() {
+                                                                                                    const placedRects = [];
                                                                                                     activeTrades.forEach(t => {
                                                                                                         if (t.vLine) {
                                                                                                             const x = chart.timeScale().timeToCoordinate(t.expiryTime);
                                                                                                             const y = candlestickSeries.priceToCoordinate(t.entryPrice);
                                                                                                             if (x !== null && y !== null) {
+                                                                                                                let finalY = y;
+                                                                                                                const halfW = t.vLine.offsetWidth ? t.vLine.offsetWidth / 2 : 15;
+                                                                                                                const halfH = t.vLine.offsetHeight ? t.vLine.offsetHeight / 2 : 8;
+                                                                                                                let attempts = 0;
+                                                                                                                while (attempts < 20 && placedRects.some(r => Math.abs(r.x - x) < (halfW + r.halfW) && Math.abs(r.y - finalY) < (halfH + r.halfH))) {
+                                                                                                                    finalY += (halfH * 2) + 2;
+                                                                                                                    attempts++;
+                                                                                                                }
+                                                                                                                placedRects.push({ x, y: finalY, halfW, halfH });
                                                                                                                 t.vLine.style.left = x + 'px';
-                                                                                                                t.vLine.style.top = y + 'px';
+                                                                                                                t.vLine.style.top = finalY + 'px';
                                                                                                                 t.vLine.style.display = 'flex';
                                                                                                             } else {
+                                                                                                                t.vLine.style.display = 'none';
+                                                                                                            }
+                                                                                                            const label = t.vLine.querySelector('.time-left');
+                                                                                                            if (label) label.innerText = `${t.remaining}s`;
+                                                                                                        }
+                                                                                                    });
+                                                                                                } else {
                                                                                                                 t.vLine.style.display = 'none';
                                                                                                             }
                                                                                                             const label = t.vLine.querySelector('.time-left');
