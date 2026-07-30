@@ -580,9 +580,10 @@
                                                                                                                     attempts++;
                                                                                                                 }
                                                                                                                 placedRects.push({ x, y: finalY, halfW, halfH });
-                                                                                                                t.vLine.style.left = x + 'px';
-                                                                                                                t.vLine.style.top = finalY + 'px';
-                                                                                                                t.vLine.style.display = 'flex';
+                                                                                                                                                                                                                                const yOffset = t.type === 'CALL' ? -18 : 18;
+                                                                                                                                                                                                                                t.vLine.style.left = x + 'px';
+                                                                                                                                                                                                                                t.vLine.style.top = (finalY + yOffset) + 'px';
+                                                                                                                                                                                                                                t.vLine.style.display = 'flex';
                                                                                                             } else {
                                                                                                                 t.vLine.style.display = 'none';
                                                                                                             }
