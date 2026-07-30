@@ -340,10 +340,10 @@
 
             <!-- Chart Timeframe Control (Any custom seconds) -->
             <div class="dock-item">
-                <i class="fa-solid fa-chart-simple"></i>
-                <div id="tf-display" class="value-overlay">60s</div>
-                <input type="number" id="chart-tf" value="60" min="1" step="1" onchange="changeTimeframe()" oninput="updateDisplays()">
-            </div>
+                            <i class="fa-solid fa-chart-simple"></i>
+                            <div id="tf-display" class="value-overlay">15s</div>
+                            <input type="number" id="chart-tf" value="15" min="1" step="1" onchange="changeTimeframe()" oninput="updateDisplays()">
+                        </div>
 
             <!-- Separator -->
             <div style="width:1px; height: 25px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
@@ -392,7 +392,7 @@
         let currentPrice = 0.00;
         let lastCandleTime = 0;
         let currentCandle = null;
-        let currentTfSeconds = 60;
+        let currentTfSeconds = 15;
         let activeTrades = [];
         let tradeHistory = [];
         let ws = null;
@@ -614,9 +614,9 @@
         }
 
         // Initialize
-        updateBalanceDisplay();
-        updateDisplays();
-        initLiveStream(60);
-    </script>
+                updateBalanceDisplay();
+                updateDisplays();
+                initLiveStream(15);
+            </script>
 </body>
 </html>
