@@ -556,20 +556,13 @@
                                     t.vLine.querySelector('.time-left').innerText = t.remaining + 's';
                                 }
                             } else {
-                                t.vLine.style.display = 'none';
-                            }
-                        }
-                    });
-                }
-                            } else {
-                                t.tLine.style.display = 'none';
-                                t.vLine.style.display = 'none';
-                            }
-                        }
-                    });
-                }
+                                                                t.vLine.style.display = 'none';
+                                                            }
+                                                        }
+                                                    });
+                                                }
 
-        chart.timeScale().subscribeVisibleTimeRangeChange(() => updateExpiryLines());
+                                    chart.timeScale().subscribeVisibleTimeRangeChange(() => updateExpiryLines());
         chart.timeScale().subscribeVisibleLogicalRangeChange(() => updateExpiryLines());
 
         // --- Execute Binary Trade ---
